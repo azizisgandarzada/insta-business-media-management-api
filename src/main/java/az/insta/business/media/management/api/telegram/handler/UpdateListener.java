@@ -2,6 +2,7 @@ package az.insta.business.media.management.api.telegram.handler;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ public class UpdateListener {
     private final TelegramBot telegramBot;
     private final UpdateHandler updateHandler;
 
-   // @PostConstruct
+    @PostConstruct
     public void start() {
         telegramBot.setUpdatesListener(updates -> {
             updates.forEach(update -> {
