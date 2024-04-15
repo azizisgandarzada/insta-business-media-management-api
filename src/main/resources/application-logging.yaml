@@ -1,0 +1,4 @@
+logging:
+  level:
+    az.tk: debug
+    reactor.netty.http.client: info

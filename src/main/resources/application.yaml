@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: insta-business-media-management-api
+  profiles:
+    include:
+      - client
+      - db
+      - logging
+      - task
+      - common

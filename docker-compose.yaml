@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: insta-business_media_management_api
+    image: azizisgandarzada20/insta-business_media-management-api:1.0.0
+    environment:
+      DB_USERNAME: <DB_USERNAME>
+      DB_PASSWORD: <DB_PASSWORD>
+      DB_HOST: <DB_HOST>
+      DB_PORT: <DB_PORT>
+      DB_NAME: <DB_NAME>
+      INSTAGRAM_GRAPH_URL: <INSTAGRAM_GRAPH_URL>
+      INSTAGRAM_ACESS_TOKEN: <INSTAGRAM_ACESS_TOKEN>
+      TELEGRAM_BOT_TOKEN: <TELEGRAM_BOT_TOKEN>
+      TELEGRAM_ALLOWED_CHAT_ID: <TELEGRAM_ALLOWED_CHAT_ID>
+    networks:
+      - postgres_db
+  db:
+    container_name: postgres_db
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: <POSTGRES_USER>
+      POSTGRES_PASSWORD: <POSTGRES_PASSWORD>
+      POSTGRES_DB: <POSTGRES_DB>
+      PGDATA: /var/lib/postgres_db/data
+    volumes:
+      - postgres_db:/var/lib/postgres_db/data
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres_db
+
+networks:
+  postgres_db:
+    driver: bridge
+
+volumes:
+  postgres_db:
