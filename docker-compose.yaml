@@ -2,8 +2,8 @@ version: '3.8'
 
 services:
   backend:
-    container_name: insta-business_media_management_api
-    image: azizisgandarzada20/insta-business_media-management-api:1.0.0
+    container_name: insta_business_media_management_api
+    image: azizisgandarzada20/insta-business-media-management-api:1.0.0
     environment:
       DB_USERNAME: <DB_USERNAME>
       DB_PASSWORD: <DB_PASSWORD>
@@ -18,7 +18,7 @@ services:
       - postgres_db
   db:
     container_name: postgres_db
-    image: postgres:latest
+    image: postgres
     environment:
       POSTGRES_USER: <POSTGRES_USER>
       POSTGRES_PASSWORD: <POSTGRES_PASSWORD>
