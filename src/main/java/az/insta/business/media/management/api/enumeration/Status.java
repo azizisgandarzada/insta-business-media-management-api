@@ -6,9 +6,10 @@ public enum Status {
     IN_REVIEW,
     APPROVED,
     REJECTED,
+    POSTING,
     POSTED,
-    POST_FAILED,
-    PUBLISHED,
-    PUBLISH_FAILED
+    FAILED,
+    PUBLISHING,
+    PUBLISHED
 
 }

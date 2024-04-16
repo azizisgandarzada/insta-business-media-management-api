@@ -2,7 +2,6 @@ package az.insta.business.media.management.api.task;
 
 import az.insta.business.media.management.api.client.InstagramGraphClient;
 import az.insta.business.media.management.api.dto.PublishMediaResponse;
-import az.insta.business.media.management.api.enumeration.MediaType;
 import az.insta.business.media.management.api.enumeration.Status;
 import az.insta.business.media.management.api.repository.MediaRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,22 +19,15 @@ public class MediaPublishTask {
 
     @Scheduled(cron = "*/5 * 10-23 * * *", zone = "Asia/Baku")
     public void run() {
-        mediaRepository.findAllByParentIsNullAndStatus(Status.POSTED)
+        mediaRepository.findAllByStatus(Status.POSTED)
                 .forEach(media -> {
-                    log.info("Media publishing {id:{}, type:{}}", media.getId(), media.getType());
                     PublishMediaResponse response = instagramGraphClient.publishMedia(media.getCreationId());
                     if (response == null) {
-                        media.setStatus(Status.PUBLISH_FAILED);
-                        if (media.getType().equals(MediaType.CAROUSEL_ALBUM.name())) {
-                            mediaRepository.updateByParentAndStatus(media, Status.POSTED, Status.PUBLISH_FAILED);
-                        }
+                        media.setStatus(Status.FAILED);
                         log.info("Failed to publish media {id:{}, type:{}}", media.getId(), media.getType());
                     } else {
-                        media.setStatus(Status.PUBLISHED);
-                        if (media.getType().equals(MediaType.CAROUSEL_ALBUM.name())) {
-                            mediaRepository.updateByParentAndStatus(media, Status.POSTED, Status.PUBLISHED);
-                        }
-                        log.info("Media published {id:{}, type:{}}", media.getId(), media.getType());
+                        media.setStatus(Status.PUBLISHING);
+                        log.info("Media is publishing {id:{}, type:{}}", media.getId(), media.getType());
                     }
                     mediaRepository.save(media);
                 });

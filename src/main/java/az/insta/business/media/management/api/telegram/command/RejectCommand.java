@@ -48,7 +48,7 @@ public class RejectCommand implements Command {
                         media.setStatus(Status.REJECTED);
                         mediaRepository.save(media);
                     }
-                    var text = String.join(SymbolConstants.NEW_LINE, media.getCaption(), SymbolConstants.NEW_LINE, media.getStatus().name());
+                    var text = String.join(SymbolConstants.DOUBLE_NEW_LINE, media.getCaption(), media.getStatus().name());
                     var editMessageText = new EditMessageText(message.chat().id(), message.messageId(), text);
                     LinkPreviewOptions linkPreviewOptions = new LinkPreviewOptions();
                     linkPreviewOptions.url(media.getUrl());

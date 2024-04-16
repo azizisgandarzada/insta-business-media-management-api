@@ -7,7 +7,6 @@ import az.insta.business.media.management.api.client.InstagramGraphClient;
 import az.insta.business.media.management.api.dto.DiscoverBusinessResponse;
 import az.insta.business.media.management.api.entity.Account;
 import az.insta.business.media.management.api.entity.Media;
-import az.insta.business.media.management.api.enumeration.MediaProductType;
 import az.insta.business.media.management.api.enumeration.Status;
 import az.insta.business.media.management.api.repository.AccountRepository;
 import az.insta.business.media.management.api.repository.MediaRepository;
@@ -36,7 +35,7 @@ public class MediaSyncTask {
     public void run() {
         List<Account> accounts = accountRepository.findAll();
         for (Account account : accounts) {
-            log.info("New media syncing {username:{}}", account.getUsername());
+            log.info("New media is syncing {username:{}}", account.getUsername());
             DiscoverBusinessResponse response = instagramGraphClient.discoverBusiness(account.getUsername());
             if (response == null || response.businessDiscovery().media() == null) {
                 log.warn("Business discovery not found {username:{}}", account.getUsername());
@@ -55,11 +54,11 @@ public class MediaSyncTask {
                         && !data.timestamp().isAfter(account.getLastMediaTimestamp())) {
                     continue;
                 }
-                Media media = buildMedia(data);
+                Media media = buildMedia(data, false);
                 media.setAccount(account);
                 if (data.children() != null) {
                     for (DiscoverBusinessResponse.DataItem childData : data.children().data()) {
-                        var childMedia = buildMedia(childData);
+                        var childMedia = buildMedia(childData, true);
                         childMedia.setAccount(account);
                         childMedia.setParent(media);
                         childMediaList.add(childMedia);
@@ -82,19 +81,20 @@ public class MediaSyncTask {
         }
     }
 
-    private Media buildMedia(DiscoverBusinessResponse.DataItem dataItem) {
+    private Media buildMedia(DiscoverBusinessResponse.DataItem dataItem, boolean isChild) {
         var media = new Media();
         media.setIgId(dataItem.id());
         media.setType(dataItem.mediaType());
-        media.setProductType(dataItem.mediaProductType());
         media.setUrl(dataItem.mediaUrl());
-        media.setStatus(Status.CREATED);
-        media.setTimestamp(dataItem.timestamp());
-        String caption = captionTemplate.replace(":username", dataItem.username());
-        if (StringUtils.isNotBlank(dataItem.caption())) {
-            caption = caption.replace(":text", dataItem.caption());
+        if (!isChild) {
+            media.setProductType(dataItem.mediaProductType());
+            media.setStatus(Status.CREATED);
+            media.setTimestamp(dataItem.timestamp());
+            String caption = captionTemplate.replace("{username}", dataItem.username());
+            caption = StringUtils.isBlank(dataItem.caption()) ? caption
+                    : caption.replace("{text}", dataItem.caption());
+            media.setCaption(caption);
         }
-        media.setCaption(caption);
         return media;
     }
 
@@ -103,8 +103,7 @@ public class MediaSyncTask {
     }
 
     private boolean isUnsupportedMediaProductType(DiscoverBusinessResponse.DataItem data) {
-        var mediaProductType = MediaProductType.of(data.mediaProductType());
-        return mediaProductType != FEED && mediaProductType != REELS;
+        return data.mediaProductType() != FEED && data.mediaProductType() != REELS;
     }
 
 }

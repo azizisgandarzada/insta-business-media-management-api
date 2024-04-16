@@ -1,3 +1,7 @@
 media:
   caption:
-    template: "Ətraflı məlumat və rezervasiya üçün @:username ilə əlaqə saxlaya bilərsiniz ✈️\n\n:text\n#tur #turlar #turlarikesfet"
+    template: |
+      Ətraflı məlumat və rezervasiya üçün @{username} ilə əlaqə saxlaya bilərsiniz ✈️
+      
+      {text}
+      #tur #turlar #turlarikesfet

@@ -10,7 +10,6 @@ import az.insta.business.media.management.api.enumeration.MediaProductType;
 import az.insta.business.media.management.api.enumeration.MediaType;
 import az.insta.business.media.management.api.enumeration.Status;
 import az.insta.business.media.management.api.repository.MediaRepository;
-import az.insta.business.media.management.api.util.StringUtils;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -28,23 +27,22 @@ public class MediaPostTask {
 
     @Scheduled(cron = "*/5 * 10-23 * * *", zone = "Asia/Baku")
     public void run() {
-        mediaRepository.findAllByParentIsNullAndStatus(Status.APPROVED)
+        mediaRepository.findAllByStatus(Status.APPROVED)
                 .forEach(media -> {
-                    var mediaProductType = MediaProductType.of(media.getProductType());
-                    if (mediaProductType == MediaProductType.FEED) {
+                    if (media.getProductType() == MediaProductType.FEED) {
                         postFeedMedia(media);
-                    } else if (mediaProductType == MediaProductType.REELS) {
+                    } else if (media.getProductType() == MediaProductType.REELS) {
                         postReelsMedia(media);
                     }
                 });
     }
 
     private void postFeedMedia(Media media) {
-        if (media.getType().equals(IMAGE.name())) {
+        if (media.getType() == IMAGE) {
             postImageMedia(media);
-        } else if (media.getType().equals(VIDEO.name())) {
+        } else if (media.getType() == VIDEO) {
             postVideoMedia(media);
-        } else if (media.getType().equals(MediaType.CAROUSEL_ALBUM.name())) {
+        } else if (media.getType() == MediaType.CAROUSEL_ALBUM) {
             postCarouselMedia(media);
         }
     }
@@ -62,19 +60,16 @@ public class MediaPostTask {
     }
 
     private void postCarouselMedia(Media media) {
-        List<Media> children = mediaRepository.findAllByParent(media);
+        List<Media> children = mediaRepository.findAllByParentOrderById(media);
         List<String> carouselMediaIds = children.stream()
-                .filter(childMedia -> StringUtils.equalsAny(childMedia.getType(), IMAGE.name(), VIDEO.name()))
                 .map(childMedia -> {
                     PostMediaResponse childResponse;
-                    if (childMedia.getType().equals(IMAGE.name())) {
+                    if (childMedia.getType() == IMAGE) {
                         childResponse = instagramGraphClient.postImageMedia(media.getCaption(), childMedia.getUrl(), true);
                     } else {
                         childResponse = instagramGraphClient.postVideoMedia(media.getCaption(), childMedia.getUrl(), true);
                     }
-                    handleResponse(childResponse, childMedia);
-                    mediaRepository.save(childMedia);
-                    return childMedia.getCreationId();
+                    return childResponse == null ? null : childResponse.id();
                 })
                 .filter(Objects::nonNull)
                 .toList();
@@ -91,12 +86,12 @@ public class MediaPostTask {
 
     private void handleResponse(PostMediaResponse response, Media media) {
         if (response == null) {
-            media.setStatus(Status.POST_FAILED);
+            media.setStatus(Status.FAILED);
             log.info("Failed to post media {id:{}, type:{}}", media.getId(), media.getType());
         } else {
             media.setCreationId(response.id());
-            media.setStatus(Status.POSTED);
-            log.info("Media posted {id:{}, type:{}}", media.getId(), media.getType());
+            media.setStatus(Status.POSTING);
+            log.info("Media is posting {id:{}, type:{}}", media.getId(), media.getType());
         }
     }
 

@@ -33,7 +33,7 @@ public class MediaReviewTask {
 
     @Scheduled(cron = "*/5 * 10-23 * * *", zone = "Asia/Baku")
     public void run() {
-        mediaRepository.findAllByParentIsNullAndStatus(Status.CREATED)
+        mediaRepository.findAllByStatus(Status.CREATED)
                 .forEach(media -> {
                     var sendMessage = new SendMessage(allowedChatId, media.getCaption());
                     var inlineKeyboardMarkup = new InlineKeyboardMarkup();

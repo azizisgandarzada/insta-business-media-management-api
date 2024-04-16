@@ -1,12 +1,13 @@
 package az.insta.business.media.management.api.client;
 
 import az.insta.business.media.management.api.constant.SymbolConstants;
+import az.insta.business.media.management.api.dto.CheckStatusResponse;
+import az.insta.business.media.management.api.dto.DiscoverBusinessResponse;
 import az.insta.business.media.management.api.dto.PostMediaResponse;
 import az.insta.business.media.management.api.dto.PublishMediaResponse;
 import az.insta.business.media.management.api.enumeration.MediaPostType;
 import az.insta.business.media.management.api.util.CollectionUtils;
 import az.insta.business.media.management.api.util.StringUtils;
-import az.insta.business.media.management.api.dto.DiscoverBusinessResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,18 +30,21 @@ public class InstagramGraphClient {
     @Value("${client.instagram-graph.credentials.access-token}")
     private String accessToken;
 
+    @Value("${client.instagram-graph.metadata.business-id}")
+    private String businessId;
+
     public DiscoverBusinessResponse discoverBusiness(String username) {
         return webClient.get()
-                .uri(uri -> uri.path("/")
+                .uri(uri -> uri.path("/{businessId}")
                         .queryParam("fields", "business_discovery.username({username})" +
                                 "{media.limit(5){id,caption,username,media_url,timestamp,media_type,media_product_type," +
                                 "children{id,username,media_url,media_type}}}")
                         .queryParam("access_token", accessToken)
-                        .build(username))
+                        .build(businessId, username))
                 .retrieve()
                 .bodyToMono(DiscoverBusinessResponse.class)
-                .onErrorResume(ex -> Mono.empty())
                 .doOnError(ex -> log.error("Failed to discover business {ex:{}}", ex.getMessage(), ex))
+                .onErrorResume(ex -> Mono.empty())
                 .block();
     }
 
@@ -92,26 +96,39 @@ public class InstagramGraphClient {
         }
         queryParams.add("access_token", accessToken);
         return webClient.post()
-                .uri(uri -> uri.path("/media")
+                .uri(uri -> uri.path("/{businessId}/media")
                         .queryParams(queryParams)
-                        .build())
+                        .build(businessId))
                 .retrieve()
                 .bodyToMono(PostMediaResponse.class)
-                .onErrorResume(ex -> Mono.empty())
                 .doOnError(ex -> log.error("Failed to post media {ex:{}}", ex.getMessage(), ex))
+                .onErrorResume(ex -> Mono.empty())
+                .block();
+    }
+
+    public CheckStatusResponse checkStatus(String creationId) {
+        return webClient.get()
+                .uri(uri -> uri.path("/{creationId}")
+                        .queryParam("fields", "status_code")
+                        .queryParam("access_token", accessToken)
+                        .build(creationId))
+                .retrieve()
+                .bodyToMono(CheckStatusResponse.class)
+                .doOnError(ex -> log.error("Failed to check status {ex:{}}", ex.getMessage(), ex))
+                .onErrorResume(ex -> Mono.empty())
                 .block();
     }
 
     public PublishMediaResponse publishMedia(String creationId) {
         return webClient.post()
-                .uri(uri -> uri.path("/media_publish")
+                .uri(uri -> uri.path("/{businessId}/media_publish")
                         .queryParam("creation_id", creationId)
                         .queryParam("access_token", accessToken)
-                        .build())
+                        .build(businessId))
                 .retrieve()
                 .bodyToMono(PublishMediaResponse.class)
-                .onErrorResume(ex -> Mono.empty())
                 .doOnError(ex -> log.error("Failed to publish media {ex:{}}", ex.getMessage(), ex))
+                .onErrorResume(ex -> Mono.empty())
                 .block();
     }
 

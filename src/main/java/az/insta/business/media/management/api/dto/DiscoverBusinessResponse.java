@@ -1,5 +1,7 @@
 package az.insta.business.media.management.api.dto;
 
+import az.insta.business.media.management.api.enumeration.MediaProductType;
+import az.insta.business.media.management.api.enumeration.MediaType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.time.OffsetDateTime;
@@ -29,8 +31,8 @@ public record DiscoverBusinessResponse(
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record DataItem(
-            String mediaType,
-            String mediaProductType,
+            MediaType mediaType,
+            MediaProductType mediaProductType,
             String caption,
             String id,
             String mediaUrl,

@@ -2,7 +2,11 @@ client:
   instagram-graph:
     url: ${INSTAGRAM_GRAPH_URL}
     credentials:
-      access-token: ${INSTAGRAM_ACESS_TOKEN}
+      access-token: ${INSTAGRAM_ACCESS_TOKEN}
+    metadata:
+      business-id: ${INSTAGRAM_BUSINESS_ID}
+      check-status-attempts: ${INSTAGRAM_CHECK_STATUS_ATTEMPTS}
+      check-status-interval: ${INSTAGRAM_CHECK_STATUS_INTERVAL}
   telegram-tk-bot:
     credentials:
       token: ${TELEGRAM_BOT_TOKEN}
