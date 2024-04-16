@@ -49,7 +49,7 @@ public class Media {
 
     private OffsetDateTime timestamp;
     private String creationId;
-    private Integer checkStatusAttempts;
+    private int checkStatusAttempts;
 
     @Enumerated(EnumType.STRING)
     private Status status;

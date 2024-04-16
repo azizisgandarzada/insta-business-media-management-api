@@ -31,7 +31,7 @@ public class MediaSyncTask {
     @Value("${media.caption.template}")
     private String captionTemplate;
 
-    @Scheduled(cron = "0 0 10-23 * * *", zone = "Asia/Baku")
+    @Scheduled(cron = "0 0/30 10-23 * * *", zone = "Asia/Baku")
     public void run() {
         List<Account> accounts = accountRepository.findAll();
         for (Account account : accounts) {
@@ -86,6 +86,7 @@ public class MediaSyncTask {
         media.setIgId(dataItem.id());
         media.setType(dataItem.mediaType());
         media.setUrl(dataItem.mediaUrl());
+        media.setCheckStatusAttempts(0);
         if (!isChild) {
             media.setProductType(dataItem.mediaProductType());
             media.setStatus(Status.CREATED);

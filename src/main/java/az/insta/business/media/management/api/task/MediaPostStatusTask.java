@@ -38,7 +38,11 @@ public class MediaPostStatusTask {
                     }
                     MediaStatusCode status = response == null ? null : response.statusCode();
                     log.info("Checking posting status {id:{}, type:{}, status:{}}", media.getId(), media.getType(), status);
-                    media.setCheckStatusAttempts(media.getCheckStatusAttempts() + 1);
+                    if (media.getStatus() == Status.POSTED) {
+                        media.setCheckStatusAttempts(0);
+                    } else {
+                        media.setCheckStatusAttempts(media.getCheckStatusAttempts() + 1);
+                    }
                     mediaRepository.save(media);
                 });
     }
